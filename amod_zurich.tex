@@ -1,0 +1,61 @@
+\documentclass[preprint]{elsarticle}
+
+% TODO LIST
+%
+%   https://docs.google.com/document/d/1O3ImRgSeTubWspO9aikxpk2pJJYv3S3TjSOC8EvoidQ/edit?usp=sharing
+%
+
+\usepackage{lineno,hyperref,amsmath,amssymb,natbib,xcolor,soul,subcaption}
+\usepackage[normalem]{ulem}
+\modulolinenumbers[5]
+
+\journal{Transportation Research Part C}
+%\bibliographystyle{elsarticle-num}
+\bibliographystyle{model2-names}\biboptions{authoryear}
+
+\begin{document}
+    \begin{frontmatter}
+        \title{Fleet operational policies for automated mobility: a simulation assessment for Zurich}
+        %
+        \author[ivt]{S.~H\"orl\corref{cor}}
+        \ead{sebastian.hoerl@ivt.baug.ethz.ch}
+        %
+        \author[idsc]{C.~Ruch}
+        \ead{claudio.ruch@idsc.mavt.ethz.ch}
+        %
+        \author[ivt]{F.~Becker}
+        \ead{felix.becker@ivt.baug.ethz.ch}
+        %
+        \author[idsc]{E.~Frazzoli}
+        \ead{emilio.frazzoli@idsc.mavt.ethz.ch}
+        %
+        \author[ivt]{K.W.~Axhausen}
+        \ead{axhausen@ivt.baug.ethz.ch}
+        %
+        \cortext[cor]{Corresponding author}
+        %
+        \address[ivt]{Institute for Transport Planning and Systems, ETH Zurich}
+        \address[idsc]{Institute for Dynamic Systems and Control, ETH Zurich}
+        %
+        \begin{abstract}
+            \input{sections/00_Abstract}
+        \end{abstract}
+        %
+        \begin{keyword}
+            AMoD \sep automated vehicle \sep mobility-on-demand \sep taxi \sep operational policy \sep fleet control \sep agent-based simulation \sep MATSim
+        \end{keyword}
+    \end{frontmatter}
+    %
+    \linenumbers
+    %
+    \input{sections/01_Introduction}
+    \input{sections/02_Literature}
+    \input{sections/03_Background}
+    \input{sections/04_Setup}
+    \input{sections/05_Results}
+    \input{sections/06_Discussion}
+    \input{sections/07_Conclusion}
+    %
+    \section*{References}
+    \bibliography{bibliography}
+\end{document}

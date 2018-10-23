@@ -1,0 +1,122 @@
+\section{Operational Policies for AMoD systems}
+\label{sec:background}
+
+An AMoD service can only be maintained if a sufficient number of customers want to use the service, making it profitable for the operator. While a multitude of factors influence the attractiveness of the service (perhaps multimedia offers in the vehicle, the quality of WiFi, ...) the authors assume two key properties: the time that passes between a customer making a request and a vehicle arriving (i.e. the wait time) and the price charged to the customer. All else being equal, an operator offering the shortest wait times at the lowest
+price will attract more customers than his competitors. 
+
+
+In our analysis, we focus on two factors influencing AMoD system performance
+
+
+\begin{itemize}
+\item The \textbf{fleet size} can be increased. In general, this should lead to a decrease in wait time, because vehicle availability improves. However, having a larger number of vehicles imposes higher capital costs that would need to be balanced by higher demand. In general, adding more vehicles to the fleet can be regarded as a long-term investment that cannot be altered on a short-term basis.
+\item The \textbf{operational policy of the fleet} can be optimized. Since it is assumed that any vehicle can be tracked and controlled online in an AMoD system, intelligent fleet operational policies can be used to minimize the wait times, but also to minimize the distance driven to reduce operational cost. Applying the proper policy is a less costly intervention than increasing the fleet size.
+\end{itemize}
+
+In the experiments presented, both components are investigated by comparing a number of operational policies for fleets of varying sizes.
+
+
+\subsection{Problem Statement}
+
+We divide the operational policy of a fleet into two separate sub-problems:
+
+\begin{itemize}
+\item To solve the \textbf{dispatching problem}, the operational policy needs to match open customer requests with available vehicles. At any time, the dispatcher can send orders for picking up a specific customer to any vehicle not currently having a customer on board (since we do not consider ride-sharing with multiple customers). A reassignment of a previously assigned vehicle to another request is also possible.
+
+\item The \textbf{rebalancing problem} consists of deciding on where to send idle vehicles during low demand times. A good operational strategy anticipates future demand so that the delay occurring in the relocation of the vehicles does not negatively impact performance.
+\end{itemize}
+
+Hence, vehicles will produce three kinds of mileage:
+
+\begin{itemize}
+\item \textbf{Empty pick-up mileage} is produced when an AV is dispatched to a request and is driving to the pick-up location. It is the mileage that must be covered to serve the customer and can be minimized by an intelligent dispatching algorithm.
+
+\item \textbf{Empty rebalancing mileage} is produced when an AV is sent to a different location where demand is expected. An ideal operator would exchange all pick-up mileage in the system against rebalancing mileage, i.e. the operator would always send empty vehicles before an actual request turns up.
+
+\item \textbf{Customer mileage} is produced with a customer on board. This mileage depends only on routing of the cars. In any combination of fleet size, operational policy and set of requests served, this mileage stays constant, assuming that origin-destination relations of the customers and congestion levels do not vary.
+
+\end{itemize}
+
+Mileage for maintenance and recharging is not further considered in this paper; it is a subject for future research. Assuming a common pricing scheme defining a price per distance, customer mileage is the only component that produces a benefit for the operator. All other mileage can be directly translated into costs and should therefore be minimized. For general demand patterns, however, it cannot be driven to zero.  \citet{spieser2014toward} show that it is bounded below by the ``earth mover's distance'' \citep{levina2001earth}, which is a measure of how different the distributions of trip origins and destinations are \citep{ruschendorf1985wasserstein}.
+
+%\sout{The objectives for a fleet management algorithm can therefore be defined as:}
+
+%\begin{enumerate}
+%\item \sout{Minimize the total pick-up distance given the non-optimal locations of the vehicles (dispatcher)}
+%\item \sout{Exchange as much pick-up distance as possible for rebalancing distance (rebalancer)}
+%\end{enumerate}
+
+An efficient operational policy picks up and delivers as many customers as possible with minimal wait and journey times while keeping the fleet mileage to a minimum with the smallest possible fleet size.
+
+
+\subsection{Selected Algorithms}
+
+%\sout{For this work three operating strategies with different characteristics from literature and one
+%additional algorithm were selected for comparison.} 
+
+For this work, four different operational policies for AMoD systems from literature were selected for comparison. All  operational policies were implemented in \citep{amodeusBase}, are open source and available online at \citep{AMoDeus-API}. They are outlined below and can serve as references for other algorithms that may be assessed in the future.
+
+
+The algorithms presented can be defined in two stages; first, the dispatching problem is solved and second, the rebalancing problem is solved. The former problem considers a list of available vehicles and a list of open requests. The latter problem considers the remaining unassigned vehicles, which must be strategically positioned so that empty mileage is reduced in future time steps.
+
+
+All algorithms are designed to be executed in predefined intervals, referred to as the \textit{dispatching interval} ($\delta t_D$) and the \textit{rebalancing interval} ($\delta t_R$).
+
+\subsubsection{Load-balancing heuristic (LBH)}
+
+The load-balancing heuristic is an operational policy presented by \citet{bischoff2016simulation}. For every dispatching time step $\delta t_D$ , it is checked whether there are more available vehicles than requests. If this is the case, it iterates through the list of requests and assigns to each request the closest vehicle. If there are more open requests than available vehicles, the policy iterates through the available vehicles and assigns the closest open request to each vehicle. These assignments are binding, which means that, even if in a later time step another vehicle becomes more viable to serve a specific request, the previously assigned vehicle stays assigned. No rebalancing is performed for this operational policy.
+
+
+\subsubsection{Global Euclidean Bipartite Matching (GBM)}
+
+The Global Euclidean Bipartite Matching operational policy presented in \citep{amodeusBase} solves an  Euclidean (or network distance-based) bipartite matching problem between the set of open requests and the set of available AVs repeatedly at every time step $\delta t_D$. The bipartite matching problem is formulated as follows: Let $R\subset \mathbb{R}^2 $ be the set of locations of open requests, and $A\subset \mathbb{R}^2 $ be the set of locations of available AVs. Let $M=\min(|R|,|A|)$ be the cardinality of the smaller set and $\sigma: R \to \{A \cup \varnothing \}$ be a permutation that maps elements of $R$ to elements of $A$ or the empty set, finally let $d: R \times A \to \mathbb{R}_{\geq 0}$ measure the distance between an element in $R$ and $A$. At every time step $\delta t_D$ the GBM operational policy solves the problem:
+\begin{align}
+    \min_{\sigma} \sum_{i=0}^{M} d_i\left(r, \sigma(r)\right)
+\end{align}
+
+The optimal solution can be computed with different algorithms, e.g., a variation of the Hungarian Algorithm described in \citep[for instance]{agarwal2004near}. As in this work, large simulations were conducted, $d$ was chosen to be the Euclidean distance.
+
+%\sout{which internally uses the Hungarian Method to solve an Assignment Problem determines an optimal bipartite
+%matching between all open requests and available vehicles in every dispatching time step}
+%$\delta t_D$
+%\sout{, which means that the cumulative distance of all pairings is minimized.
+%The distance function used is the Euclidean distance which allows to use fast approximation
+%algorithms } 
+%
+%\sout{. In contrast to the previous strategy, the
+%assignments can be changed until a vehicle actually reaches %its target.}
+
+\subsubsection{Feedforward Fluidic Optimal Rebalancing Policy (FF)}
+
+In \citep{pavone2011load}, a feedforward strategy is presented on how to rebalancing vehicles between different vertices in a directed graph $G = (V,E)$. For each vertex $i$ and time step $\delta t_R$, the arrival rates $\lambda_i$ and transition probabilities $p_{ij}$ for any nodes $v_i, v_j \in V$  are computed from historical data. The linear program in equation \ref{eq:linearprogram} computes the optimal rebalancing flows $\alpha _{ij}$ for an equilibrium point of the underlying flow
+model with travel times $T_{i,j}\ \forall v_i, v_j \in V$. 
+\begin{align}
+&\textnormal{minimize}& &\sum_{i,j} T_{i,j} \alpha _{ij} & && && \nonumber \\
+&\textnormal{subject to}&
+&\sum_{i \neq j} \alpha _{ij} - \alpha _{ji} =-\lambda_i  + \sum_{i \neq j} \lambda_j p_{ji}
+& &\forall i \in V &\label{eq:linearprogram} \\
+&& &\alpha_{ij} \geq 0& & \forall i, j \in V& \nonumber
+\end{align}
+To implement this strategy, we divide the operating area into a set of zones. The nodes from \cite{pavone2011load} represent the centroids of these zones on
+which a complete directed graph (\textit{virtual network}) is placed (see Figure \ref{fig:map}). Because the daily travel plans of all agents are known a priori in our simulation, customer arrival rates $\lambda_i$ can be precalculated. We deliberately assume perfect knowledge of the demand patterns for the operator, whereas, in reality, only incomplete or noisy data could be used instead. With that data, available vehicles are continuously rebalanced between vertices of the virtual network according to the static rebalancing rates  $\alpha_{ij}$. To achieve this, the rate is integrated over the rebalancing time steps $\delta t_R$ and saved in a local variable. Whenever this variable exceeds the value $1$, one car is rebalanced and the variable is reduced by one. If such an assignment is performed, the vehicle is sent to a randomly selected location within the chosen node of the virtual network. In \cite{pavone2011load}, this rebalancing strategy is described purely on the level of the \textit{virtual network} and the associated dispatching logic is not specified. To provide a fair comparison to the other described algorithms, we therefore match vehicles using Global Euclidean Bipartite Matching.
+
+\subsubsection{Adaptive Uniform Rebalancing Policy (AU)}
+
+The last implemented strategy is an algorithm described in \cite{pavone2011load}. Compared to the previous operational policy, this one is not a pure feed-forward solution; its rebalancing commands depend on real-time measurements of the system. In every rebalancing time step $\delta t_R$ for every area of the virtual network, the available vehicles and open requests are counted and fed into a mixed integer linear program derived from equation \ref{eq:linearprogram}:
+
+\begin{align}
+&\textnormal{minimize}& &\sum_{i,j} T_{i,j} a_{ij} & && && \nonumber \\
+&\textnormal{subject to}&
+&\sum_{i \neq j} a_{ij} - a_{ji} = -u - m_i + n_{available,i} + n_{arriving,i}
+& &\forall i \in V &\label{eq:linearprogram2} \\
+&& &a_{ij} \in \mathbb{N}^+& & \forall i, j \in V& \nonumber
+\end{align}
+
+Here, we have $m_i \in \mathbb{N}^+$ as the current number of open requests in node $i$, $n_{available,i} \in \mathbb{N}^+$ as the number of vehicle currently idling in node $i$ and $n_{arriving,i} \in \mathbb{N}^+$ as the number of vehicles currently on their way to node $i$, either in rebalancing mode or carrying a customer. The quantity $u \in \mathbb{N}^+$ defines the number of vehicles per node if they would be uniformly distributed over the virtual network, i.e. if  there should be the same number of vehicles in every node. Due to the integrality constraint on $a_{ij}$, this is a mixed integer linear program and, as such, hard to solve. But as its constraint matrix is \textit{totally unimodular}, solving the associated linear program with a relaxed constraint $a_{i,j} \in \mathbb{R}_{\geq 0}$ will yield a solution with $a_{ij} \in \mathbb{N}^+$, thus solving the original problem.
+
+
+Equation \ref{eq:linearprogram2} is designed to distribute available vehicles in the \textit{virtual network} with minimal rebalancing flows, taking into account current flows of vehicles and open requests. If no requests are present, i.e., $m_i = 0$, the policy will evenly distribute vehicles on all virtual nodes; i.e, this rebalancing strategy keeps the available fleet fraction uniformly distributed on the set of \textit{virtual nodes} with minimal rebalancing flows. Depending on the scenario to which the algorithm is applied, this may lead to the following behavior; at off-peak times, cars are evenly distributed in the system, also to remote locations with reduced demand. As soon as demand rises for the peak, the AVs start rebalancing again toward demand-dense locations. The delay in this rebalancing action results in a shortage of vehicles at the beginning of the peak hours. For this reason, this algorithm is best applied to scenarios with a small
+spatial dimension and limited variations in travel demand density, e.g., to an inner city.
+
+
+Also for this algorithm, no dispatching logic is specified and therefore the AVs are dispatched using GBM logic.
